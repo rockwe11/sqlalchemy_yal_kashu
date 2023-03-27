@@ -1,5 +1,8 @@
+import datetime
+
 from flask import Flask, render_template, redirect
 from data import db_session
+from data.jobs import Jobs
 from data.news import News
 
 from data.users import User
@@ -44,18 +47,9 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 def main():
     db_session.global_init("db/ship.db")
     db_sess = db_session.create_session()
-    captain = User(surname="Scott", name="Ridley", age=21, position="captain", speciality="research engineer",
-                   address="module_1", email="scott_chief@mars.org")
-    col1 = User(surname="Weir", name="Andy", age=22, position="colonist", speciality="chief scientist",
-                address="module_1", email="weir_chief@mars.org")
-    col2 = User(surname="Bean", name="Sean", age=17, position="colonist", speciality="middle scientist",
-                address="module_1", email="beaner@mars.org")
-    col3 = User(surname="Kapoor", name="Venkat", age=15, position="colonist", speciality="industrial engineer",
-                address="module_1", email="kapporich@mars.org")
-    db_sess.add(captain)
-    db_sess.add(col1)
-    db_sess.add(col2)
-    db_sess.add(col3)
+    job = Jobs(team_leader=1, job="deployment of residential modules 1 and 2", work_size=15,
+               collaborators="2, 3", start_date=datetime.datetime.now(), is_finished=False)
+    db_sess.add(job)
     db_sess.commit()
     # app.run()
 
