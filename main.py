@@ -12,11 +12,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
 
-# @app.route("/")
-# def index():
-#     db_sess = db_session.create_session()
-#     news = db_sess.query(News).filter(News.is_private != True)
-#     return render_template("index.html", news=news)
+@app.route("/")
+def index():
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Jobs).all()
+    return render_template("index.html", jobs=jobs)
 #
 #
 # @app.route('/register', methods=['GET', 'POST'])
@@ -46,12 +46,7 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
 def main():
     db_session.global_init("db/ship.db")
-    db_sess = db_session.create_session()
-    job = Jobs(team_leader=1, job="deployment of residential modules 1 and 2", work_size=15,
-               collaborators="2, 3", start_date=datetime.datetime.now(), is_finished=False)
-    db_sess.add(job)
-    db_sess.commit()
-    # app.run()
+    app.run()
 
 
 if __name__ == '__main__':
