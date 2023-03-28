@@ -22,6 +22,8 @@ class User(SqlAlchemyBase, UserMixin):
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     jobs = orm.relationship("Jobs", back_populates='user')
+    department = orm.relationship("Department", back_populates='user')
+
 
     def __repr__(self):
         return f"<User> {self.name} {self.email}"
