@@ -1,6 +1,7 @@
 import sqlalchemy
 from sqlalchemy import orm
 
+from data.category import association_table
 from data.db_session import SqlAlchemyBase
 
 
@@ -15,5 +16,9 @@ class Jobs(SqlAlchemyBase):
     collaborators = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     start_date = sqlalchemy.Column(sqlalchemy.DateTime)
     end_date = sqlalchemy.Column(sqlalchemy.DateTime)
+    category = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("category.id"))
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean)
     user = orm.relationship('User')
+    categories = orm.relationship("Category",
+                                  secondary=association_table,
+                                  backref="jobs")

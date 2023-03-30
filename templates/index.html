@@ -15,6 +15,7 @@
         <th scope="col">Team leader</th>
         <th scope="col">Duration</th>
         <th scope="col">List of collaborators</th>
+        <th scope="col">Hazard category</th>
         <th scope="col">Is finished</th>
     </tr>
     </thead>
@@ -24,6 +25,7 @@
         <td>{{item.user.surname}} {{item.user.name}}</td>
         <td>{{item.work_size}} hours</td>
         <td>{{item.collaborators}}</td>
+        <td>{{item.category}}</td>
         <td>Is {% if not item.is_finished %}not {% endif %} finished</td>
     </tr>
     </tbody>

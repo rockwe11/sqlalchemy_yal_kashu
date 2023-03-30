@@ -3,6 +3,7 @@ import datetime
 from flask import Flask, render_template, redirect, abort, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from data import db_session
+from data.category import Category
 from data.department import Department
 from data.jobs import Jobs
 from data.news import News
@@ -104,10 +105,13 @@ def add_jobs():
         jobs.job = form.job.data
         jobs.work_size = form.work_size.data
         jobs.collaborators = form.collaborators.data
+        jobs.category = form.category.data
         jobs.is_finished = form.is_finished.data
         current_user.jobs.append(jobs)
         db_sess.merge(current_user)
         db_sess.commit()
+        # jobs.categories.append(db_sess.query(Category).filter(Category.id == form.category.data).first())
+        # db_sess.commit()
         return redirect('/')
     return render_template('jobs.html', title='Добавление работы',
                            form=form)
@@ -124,6 +128,7 @@ def edit_jobs(id):
             form.job.data = jobs.job
             form.work_size.data = jobs.work_size
             form.collaborators.data = jobs.collaborators
+            form.category.data = jobs.categories[0].id
             form.is_finished.data = jobs.is_finished
         else:
             abort(404)
@@ -134,6 +139,7 @@ def edit_jobs(id):
             jobs.job = form.job.data
             jobs.work_size = form.work_size.data
             jobs.collaborators = form.collaborators.data
+            jobs.categories[0] = db_sess.query(Category).filter(Category.id == form.category.data).first()
             jobs.is_finished = form.is_finished.data
             db_sess.commit()
             return redirect('/')
@@ -216,7 +222,18 @@ def load_user(user_id):
 
 
 def main():
-    db_session.global_init("db/ship_v2.db")
+    db_session.global_init("db/ship_v3.db")
+    # db_sess = db_session.create_session()
+    # category1 = Category()
+    # category1.name = "Категория 1"
+    # category2 = Category()
+    # category2.name = "Категория 2"
+    # category3 = Category()
+    # category3.name = "Категория 3"
+    # db_sess.add(category1)
+    # db_sess.add(category2)
+    # db_sess.add(category3)
+    # db_sess.commit()
     app.run()
 
 
