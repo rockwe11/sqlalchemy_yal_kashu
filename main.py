@@ -1,12 +1,14 @@
+import base64
 import datetime
+import io
 
-from flask import Flask, render_template, redirect, abort, request
+import requests
+from flask import Flask, render_template, redirect, abort, request, make_response, jsonify, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from data import db_session
+from data import db_session, jobs_api, users_api
 from data.category import Category
 from data.department import Department
 from data.jobs import Jobs
-from data.news import News
 
 from data.users import User
 from forms.department import DepartmentForm
@@ -128,7 +130,7 @@ def edit_jobs(id):
             form.job.data = jobs.job
             form.work_size.data = jobs.work_size
             form.collaborators.data = jobs.collaborators
-            form.category.data = jobs.categories[0].id
+            form.category.data = jobs.category
             form.is_finished.data = jobs.is_finished
         else:
             abort(404)
@@ -139,7 +141,7 @@ def edit_jobs(id):
             jobs.job = form.job.data
             jobs.work_size = form.work_size.data
             jobs.collaborators = form.collaborators.data
-            jobs.categories[0] = db_sess.query(Category).filter(Category.id == form.category.data).first()
+            jobs.category = form.category.data
             jobs.is_finished = form.is_finished.data
             db_sess.commit()
             return redirect('/')
@@ -164,6 +166,23 @@ def jobs_delete(id):
     return redirect('/')
 
 
+@app.route('/users_show/<int:user_id>')
+def users_show(user_id):
+    # db_sess = db_session.create_session()
+    # user = db_sess.query(User).get(user_id)
+    # if not user:
+    #     return jsonify({'error': 'Not found'})
+    user = requests.get(f"http://127.0.0.1:5000/api/users/{user_id}").json()['users']
+    response = requests.get(f"https://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={user['city_from']}&format=json")
+    if response:
+        json_response = response.json()
+
+        toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        toponym_coodrinates = toponym["Point"]["pos"]
+        return render_template("users_show.html", title="Родной дом", city_from=user['city_from'], surname=user['surname'], name=user['name'], img=f"http://static-maps.yandex.ru/1.x/?ll={','.join(toponym_coodrinates.split())}8&spn=0.2,0.2&l=map")
+    return jsonify({'error': 'Not found'})
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
     form = RegisterForm()
@@ -182,6 +201,7 @@ def reqister():
             name=form.name.data,
             email=form.email.data,
             age=int(form.age.data),
+            city_from=form.city_from.data,
             position=form.position.data,
             speciality=form.speciality.data,
             address=form.address.data
@@ -221,8 +241,20 @@ def load_user(user_id):
     return db_sess.query(User).get(user_id)
 
 
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+@app.errorhandler(400)
+def bad_request(_):
+    return make_response(jsonify({'error': 'Bad Request'}), 400)
+
+
 def main():
-    db_session.global_init("db/ship_v3.db")
+    db_session.global_init("db/ship_v4.db")
+    app.register_blueprint(jobs_api.blueprint)
+    app.register_blueprint(users_api.blueprint)
     # db_sess = db_session.create_session()
     # category1 = Category()
     # category1.name = "Категория 1"
